@@ -1,0 +1,13 @@
+body {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+#title {
+  font-size: 500%;
+  letter-spacing: 10px;
+  padding-top: 10%;
+}
+.text {
+  font-size: 200%;
+}
