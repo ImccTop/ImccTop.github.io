@@ -11,11 +11,11 @@ export default function Home() {
   const slogan = ["Innovative", "Minds", "Craft", "Connections"];
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative overflow-hidden">
       <div className="absolute inset-0 z-0">
         <Threads amplitude={1} distance={0} enableMouseInteraction={false} />
       </div>
-      <div className="absolute inset-0 z-10 flex flex-row justify-between items-center p-14 md:p-20 lg:p-32">
+      <div className="absolute inset-0 z-10 flex flex-row justify-between items-center p-8 md:p-20 lg:p-32">
         <AnimatedContent
           distance={150}
           direction="horizontal"
