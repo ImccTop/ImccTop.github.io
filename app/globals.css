@@ -8,12 +8,9 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
+  background: linear-gradient(to bottom,
       transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }
 
 @theme {
@@ -27,6 +24,18 @@ body {
     }
     100% {
       background-position: 0% 50%;
+    }
+  }
+}
+
+@theme {
+  --animate-shine: shine 5s linear infinite;
+  @keyframes shine {
+    0% {
+      background-position: 100%;
+    }
+    100% {
+      background-position: -100%;
     }
   }
 }
