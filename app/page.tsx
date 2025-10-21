@@ -58,10 +58,10 @@ export default function Home() {
         <Threads
           amplitude={isMobile ? 1.0 : 1.5}
           distance={isMobile ? 0.2 : 0.3}
-          enableMouseInteraction={!isMobile}
+          enableMouseInteraction={false}
         />
 
-        {/* 渐变光晕 - 在移动设备上减少效果 */}
+        {/* 渐变光晕 */}
         <div
           className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-cyan-500/10 rounded-full blur-3xl transition-transform duration-300 ease-out"
           style={{
@@ -89,7 +89,7 @@ export default function Home() {
         <nav className="flex justify-between items-center p-4 md:p-6">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center shadow-lg shadow-cyan-500/20">
-              <span className="text-white font-bold text-sm">织芯</span>
+              <span className="text-white/90 font-bold text-sm">织芯</span>
             </div>
             <span className="font-semibold text-lg bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
               Imcc
@@ -114,10 +114,10 @@ export default function Home() {
         </section>
 
         {/* 主要内容容器 */}
-        <div className="flex-grow flex flex-col lg:flex-row justify-between items-center sm:p-8 md:p-16 lg:p-20">
+        <div className="flex-grow flex flex-col lg:flex-row justify-between items-center px-4 py-8 sm:p-8 md:p-16 lg:p-20">
           <AnimatedContent
-            distance={isMobile ? 80 : 150}
-            direction={isMobile ? "vertical" : "horizontal"}
+            distance={150}
+            direction="horizontal"
             reverse={true}
             duration={1.2}
             ease="power3.out"
@@ -199,7 +199,7 @@ export default function Home() {
                       window.open("mailto:imcc@imcc.top", "_blank")
                     }
                   >
-                    <span className="text-white">联系我们</span>
+                    <span className="text-white/70">探索</span>
                   </button>
                 </div>
               </AnimatedContent>
@@ -207,8 +207,8 @@ export default function Home() {
           </AnimatedContent>
 
           <AnimatedContent
-            distance={isMobile ? 80 : 150}
-            direction={isMobile ? "vertical" : "horizontal"}
+            distance={150}
+            direction="horizontal"
             reverse={false}
             duration={1.2}
             ease="power3.out"
