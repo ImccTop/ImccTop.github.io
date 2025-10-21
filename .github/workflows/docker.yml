@@ -43,7 +43,7 @@ jobs:
           retention-days: 1
 
   deploy:
-    name: Restart Server Docker Container
+    name: Deploy Docker Image to Server
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -54,7 +54,7 @@ jobs:
           path: images
 
       - name: Upload Docker Image
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           port: ${{ secrets.SSH_PORT }}
@@ -64,20 +64,16 @@ jobs:
           target: ${{ secrets.IMAGE_DIR_PATH }}
           strip_components: 1
 
-      # - name: Restart Docker Container
-      #   uses: appleboy/ssh-action@v1.2.0
-      #   with:
-      #     host: ${{ secrets.SSH_HOST }}
-      #     username: ${{ secrets.SSH_USERNAME }}
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     script: |
-      #       # load local image
-      #       docker load -i ${{ secrets.IMAGE_DIR_PATH }}/nextjs-app.tar
+      - name: Restart Docker Compose
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # load local image
+            docker load -i ${{ secrets.IMAGE_DIR_PATH }}/nextjs-app.tar
 
-      #       # restart container
-      #       docker stop nextjs-app || true
-      #       docker rm nextjs-app || true
-      #       docker run -d --name nextjs-app -p 3000:3000 nextjs-app
-
-      #       # clean unused images
-      #       docker image prune -f
+            # restart container
+            docker compose --file '${{ secrets.IMAGE_DIR_PATH }}/docker-compose.yml' --project-name 'imcc' restart
