@@ -13,55 +13,82 @@ import ShinyText from "@/components/ShinyText";
 export default function Home() {
   const slogan = ["Innovative", "Minds", "Craft", "Connections"];
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    // 检测设备类型
+    const checkDevice = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkDevice();
+    window.addEventListener("resize", checkDevice);
+
     const handleMouseMove = (e: { clientX: number; clientY: number }) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth) * 2 - 1,
         y: (e.clientY / window.innerHeight) * 2 - 1,
       });
     };
-
     window.addEventListener("mousemove", handleMouseMove);
+
+    // 设置加载完成状态
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 500);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("resize", checkDevice);
+      clearTimeout(timer);
     };
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div
+      className={`min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-x-hidden transition-opacity duration-1000 ${
+        isLoaded ? "opacity-100" : "opacity-0"
+      }`}
+    >
       {/* 背景 */}
       <div
         className="absolute inset-0 z-0 overflow-hidden"
-        style={{ width: "100%", height: "600px" }}
+        style={{ width: "100%", height: "100%" }}
       >
-        <Threads amplitude={1.5} distance={0.3} enableMouseInteraction={true} />
+        <Threads
+          amplitude={isMobile ? 1.0 : 1.5}
+          distance={isMobile ? 0.2 : 0.3}
+          enableMouseInteraction={!isMobile}
+        />
 
-        {/* 渐变光晕 */}
+        {/* 渐变光晕 - 在移动设备上减少效果 */}
         <div
-          className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-cyan-500/10 rounded-full blur-3xl"
+          className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-cyan-500/10 rounded-full blur-3xl transition-transform duration-300 ease-out"
           style={{
-            transform: `translate(${mousePosition.x * 50}px, ${
-              mousePosition.y * 50
-            }px)`,
+            transform: isMobile
+              ? "translate(0, 0)"
+              : `translate(${mousePosition.x * 50}px, ${
+                  mousePosition.y * 50
+                }px)`,
           }}
         />
         <div
-          className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-purple-500/10 rounded-full blur-3xl"
+          className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-purple-500/10 rounded-full blur-3xl transition-transform duration-300 ease-out"
           style={{
-            transform: `translate(${-mousePosition.x * 50}px, ${
-              -mousePosition.y * 50
-            }px)`,
+            transform: isMobile
+              ? "translate(0, 0)"
+              : `translate(${-mousePosition.x * 50}px, ${
+                  -mousePosition.y * 50
+                }px)`,
           }}
         />
       </div>
 
       {/* 导航栏 */}
-      <div className="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+      <div className="fixed top-0 left-0 right-0 z-50 transition-all duration-500 backdrop-blur-md bg-black/20 border-b border-white/10">
         <nav className="flex justify-between items-center p-4 md:p-6">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center shadow-lg shadow-cyan-500/20">
               <span className="text-white font-bold text-sm">织芯</span>
             </div>
             <span className="font-semibold text-lg bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
@@ -71,13 +98,13 @@ export default function Home() {
         </nav>
       </div>
 
-      {/* 主内容 */}
-      <div className="relative z-10 flex flex-col pt-12 md:pt-16">
+      {/* 主内容区域 */}
+      <div className="relative z-10 flex flex-col flex-grow pt-16 md:pt-20">
         <section className="fixed z-40 overflow-hidden">
           <GradualBlur
             target="page"
             position="top"
-            height="8rem"
+            height={isMobile ? "6rem" : "8rem"}
             strength={2}
             divCount={5}
             curve="bezier"
@@ -86,10 +113,11 @@ export default function Home() {
           />
         </section>
 
-        <div className="flex-1 flex flex-col lg:flex-row justify-between items-center p-8 md:p-20 lg:p-32">
+        {/* 主要内容容器 */}
+        <div className="flex-grow flex flex-col lg:flex-row justify-between items-center sm:p-8 md:p-16 lg:p-20">
           <AnimatedContent
-            distance={150}
-            direction="horizontal"
+            distance={isMobile ? 80 : 150}
+            direction={isMobile ? "vertical" : "horizontal"}
             reverse={true}
             duration={1.2}
             ease="power3.out"
@@ -97,13 +125,16 @@ export default function Home() {
             animateOpacity={true}
             scale={1.2}
             threshold={0.2}
-            delay={0.3}
+            delay={0.8}
           >
-            <div className="flex flex-col gap-1 font-mono mb-12 lg:mb-0">
+            <div className="flex flex-col gap-1 font-mono mb-8 lg:mb-0 text-center lg:text-left">
               {slogan.map((word, index) => (
-                <div key={index} className="flex flex-row items-baseline group">
+                <div
+                  key={index}
+                  className="flex flex-row items-baseline group justify-center lg:justify-start mb-2 last:mb-0"
+                >
                   <GradientText
-                    className="text-4xl font-bold md:text-6xl lg:text-7xl cursor-pointer"
+                    className="text-3xl font-bold sm:text-4xl md:text-5xl lg:text-7xl cursor-pointer transition-transform duration-300 hover:scale-105"
                     colors={["#40ffaa", "#4079ff", "#40ffaa"]}
                     animationSpeed={5}
                     showBorder={false}
@@ -111,14 +142,14 @@ export default function Home() {
                     {word[0]}
                   </GradientText>
                   <BlurText
-                    className="text-3xl font-bold md:text-5xl lg:text-6xl cursor-pointer"
+                    className="text-2xl font-bold sm:text-3xl md:text-4xl lg:text-6xl cursor-pointer"
                     text={word.substring(1)}
                     delay={100}
                     animateBy="letters"
                     direction="bottom"
                   />
-                  <div className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full" />
+                  <div className="ml-2 lg:ml-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:translate-x-1">
+                    <div className="w-2 h-2 bg-cyan-400 rounded-full shadow-lg shadow-cyan-400/50" />
                   </div>
                 </div>
               ))}
@@ -132,29 +163,52 @@ export default function Home() {
                 initialOpacity={0}
                 animateOpacity={true}
                 threshold={0.2}
-                delay={0.5}
+                delay={0.8}
               >
-                <p className="text-white/60 text-lg md:text-xl mt-8 max-w-md font-light leading-relaxed">
+                <p className="text-white/70 text-base sm:text-lg md:text-xl mt-6 md:mt-8 max-w-md mx-auto lg:mx-0 font-light leading-relaxed bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10">
                   重要的不仅是我们创造了什么，更在于我们为何以及如何去建立联结。
                 </p>
+
+                {/* CTA 按钮组 */}
+                <div className="flex flex-col sm:flex-row justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4 mt-6 md:mt-8">
+                  <button
+                    className="px-6 py-3 sm:px-8 sm:py-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-md border border-cyan-400/30 rounded-full hover:from-cyan-500/30 hover:to-blue-500/30 transition-all duration-300 min-h-[44px] flex items-center justify-center shadow-lg hover:shadow-cyan-500/20 hover:scale-105 group"
+                    onClick={() =>
+                      window.open("https://github.com/ImccTop", "_blank")
+                    }
+                  >
+                    <ShinyText text="了解更多" disabled={false} speed={3} />
+                    <svg
+                      className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                  </button>
+
+                  <button
+                    className="px-6 py-3 sm:px-8 sm:py-3 bg-white/5 backdrop-blur-sm border border-white/15 rounded-full hover:bg-white/10 transition-all duration-300 min-h-[44px] flex items-center justify-center hover:scale-105"
+                    onClick={() =>
+                      window.open("mailto:imcc@imcc.top", "_blank")
+                    }
+                  >
+                    <span className="text-white">联系我们</span>
+                  </button>
+                </div>
               </AnimatedContent>
-              {/* CTA 按钮 */}
-              <div className="flex space-x-4 mt-8">
-                <button
-                  className="px-8 py-3 bg-white/5 backdrop-blur-sm border border-white/15 rounded-full hover:bg-white/15 transition-all duration-300"
-                  onClick={() =>
-                    window.open("https://github.com/ImccTop", "_blank")
-                  }
-                >
-                  <ShinyText text="了解更多" disabled={false} speed={3} />
-                </button>
-              </div>
             </div>
           </AnimatedContent>
 
           <AnimatedContent
-            distance={150}
-            direction="horizontal"
+            distance={isMobile ? 80 : 150}
+            direction={isMobile ? "vertical" : "horizontal"}
             reverse={false}
             duration={1.2}
             ease="power3.out"
@@ -162,60 +216,68 @@ export default function Home() {
             animateOpacity={true}
             scale={1.2}
             threshold={0.2}
-            delay={0.3}
+            delay={0.8}
           >
             {/* 主图标 */}
-            <div className="relative group w-32 h-32 md:w-64 md:h-64 lg:w-80 lg:h-80 min-w-32 min-h-32 transform group-hover:scale-105 transition-transform duration-500">
+            <div className="relative group w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-80 lg:h-80 mt-8 lg:mt-0 transform transition-all duration-500 hover:scale-105">
+              <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <Image
                 src={icon}
-                alt="icon"
+                alt="Imcc 织芯 图标"
                 width={512}
                 height={512}
-                className="rounded-2xl transform group-hover:rotate-3 transition-transform duration-500"
+                className="rounded-2xl transform transition-all duration-500 group-hover:rotate-3 relative z-10 shadow-2xl"
+                priority
               />
+              {/* 悬浮效果 */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
             </div>
           </AnimatedContent>
         </div>
+      </div>
 
-        {/* 底部信息 */}
-        <div className="bottom-0 left-0 right-0 z-40">
-          <div className="bg-black/30 backdrop-blur-md border-t border-white/10">
-            <div className="flex flex-col justify-center items-center text-white/70 text-sm p-4 md:p-6">
-              {/* 第一行：技术信息和演示标识 */}
-              <div className="flex flex-col md:flex-row justify-between items-center w-full mb-3">
-                <div className="flex justify-center space-x-8 mb-3 md:mb-0">
-                  <div className="flex justify-center space-x-2">
-                    <svg
-                      className="w-5 h-5"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                    </svg>
-                    <span>由 Github 构建</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
-                    <span>由 Next.js 驱动</span>
-                  </div>
+      {/* 底部信息 */}
+      <div className="w-full z-40 mt-16 md:mt-20">
+        <div className="bg-black/40 backdrop-blur-md border-t border-white/10">
+          <div className="flex flex-col justify-center items-center text-white/70 text-xs sm:text-sm p-4 md:p-6">
+            {/* 第一行：技术信息和演示标识 */}
+            <div className="flex flex-col md:flex-row justify-between items-center w-full max-w-6xl mb-3 gap-3 md:gap-0">
+              <div className="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-8 text-center">
+                <div className="flex justify-center items-center space-x-2">
+                  <svg
+                    className="w-4 h-4 sm:w-5 sm:h-5"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+                    />
+                  </svg>
+                  <span>由 Github 构建</span>
                 </div>
-
-                <div className="flex space-x-6">
-                  <span>*前端演示*</span>
+                <div className="flex justify-center items-center space-x-2">
+                  <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse shadow shadow-cyan-400/50" />
+                  <span>由 Next.js 驱动</span>
                 </div>
               </div>
 
-              {/* 第二行：备案号 */}
-              <div className="w-full text-center">
-                <a
-                  href="https://beian.miit.gov.cn/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-1xl text-white/70 hover:text-white/90 transition-colors duration-300"
-                >
-                  浙ICP备2025202408号-1
-                </a>
+              <div className="flex space-x-6">
+                <span className="text-xs sm:text-sm bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent font-medium">
+                  *前端演示*
+                </span>
               </div>
+            </div>
+
+            {/* 第二行：备案号 */}
+            <div className="w-full text-center mt-2">
+              <a
+                href="https://beian.miit.gov.cn/"
+                target="_blank"
+                className="text-xs sm:text-sm text-white/70 hover:text-white/90 transition-colors duration-300 hover:underline"
+              >
+                浙ICP备2025202408号-1
+              </a>
             </div>
           </div>
         </div>
