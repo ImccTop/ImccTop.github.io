@@ -72,8 +72,9 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # load local image
-            docker load -i ${{ secrets.IMAGE_DIR_PATH }}/nextjs-app.tar
+            cd ${{ secrets.IMAGE_DIR_PATH }}
 
-            # restart container
-            docker compose --file '${{ secrets.IMAGE_DIR_PATH }}/docker-compose.yml' --project-name 'imcc' restart
+            docker compose down
+            docker load -i nextjs-app.tar
+            docker compose up -d
+            docker image prune -f
