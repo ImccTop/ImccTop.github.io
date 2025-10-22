@@ -108,7 +108,7 @@ export default function Home() {
             initialOpacity={0.2}
             animateOpacity={true}
             scale={1.2}
-            threshold={0.2}
+            threshold={0}
             delay={0.8}
           >
             <div className="flex flex-col gap-1 font-mono mb-8 lg:mb-0 text-center lg:text-left">
@@ -128,7 +128,8 @@ export default function Home() {
                   <BlurText
                     className="text-2xl font-bold sm:text-3xl md:text-4xl lg:text-6xl cursor-pointer"
                     text={word.substring(1)}
-                    delay={100}
+                    delay={60}
+                    threshold={1}
                     animateBy="letters"
                     direction="bottom"
                   />
@@ -146,13 +147,24 @@ export default function Home() {
                 ease="power3.out"
                 initialOpacity={0}
                 animateOpacity={true}
-                threshold={0.2}
-                delay={0.8}
+                threshold={0}
+                delay={1.0}
               >
                 <p className="text-white/70 text-base sm:text-lg md:text-xl mt-6 md:mt-8 max-w-md mx-auto lg:mx-0 font-light leading-relaxed bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10">
                   重要的不仅是我们创造了什么，更在于我们为何以及如何去建立联结。
                 </p>
+              </AnimatedContent>
 
+              <AnimatedContent
+                distance={50}
+                direction="vertical"
+                duration={1}
+                ease="power3.out"
+                initialOpacity={0}
+                animateOpacity={true}
+                threshold={0}
+                delay={1.2}
+              >
                 {/* CTA 按钮组 */}
                 <div className="flex flex-col sm:flex-row justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4 mt-6 md:mt-8">
                   <button
@@ -194,7 +206,7 @@ export default function Home() {
             initialOpacity={0.2}
             animateOpacity={true}
             scale={1.2}
-            threshold={0.2}
+            threshold={0}
             delay={0.8}
           >
             {/* 主图标 */}
