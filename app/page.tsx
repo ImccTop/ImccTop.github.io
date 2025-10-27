@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import icon from "../public/icon1024.png";
+import beian from "../public/beian.png";
 import AnimatedContent from "@/components/AnimatedContent";
 import BlurText from "@/components/BlurText";
 import GradientText from "@/components/GradientText";
@@ -227,7 +228,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 优化后的底部信息 */}
+      {/* 底部信息 */}
       <div className="w-full mt-16 md:mt-20">
         <div className="bg-gradient-to-t from-black/60 to-transparent backdrop-blur-xl">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
@@ -330,9 +331,21 @@ export default function Home() {
 
             {/* 底部：备案信息 */}
             <div className="pt-4 border-t border-white/10">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-white/60">
+              <div className="flex flex-col md:flex-row items-center gap-3 text-sm text-white/60">
+                <div className="flex flex-row gap-1 items-center">
+                  <Image src={beian} alt="beian" width={14} />
+                  <a
+                    href="https://beian.mps.gov.cn/#/query/webSearch?code=33018502002519"
+                    rel="noreferrer"
+                    target="_blank"
+                    className="hover:text-white transition-colors hover:underline"
+                  >
+                    浙公网安备33018502002519号
+                  </a>
+                </div>
                 <a
                   href="https://beian.miit.gov.cn/"
+                  rel="noreferrer"
                   target="_blank"
                   className="hover:text-white transition-colors hover:underline"
                 >
