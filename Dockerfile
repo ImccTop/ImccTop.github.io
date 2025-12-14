@@ -4,7 +4,7 @@
 # -----------------------------------------------------------------------------
 
 # Use Bun's official image
-FROM oven/bun:1 AS base
+FROM oven/bun:latest AS base
 
 WORKDIR /app
 
@@ -40,7 +40,10 @@ ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME="0.0.0.0"
 
-# Use Alpine Linux commands:
+# Install required packages for user management
+RUN apk add --no-cache shadow
+
+# Create user and group
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S -u 1001 -G nodejs nextjs
 
