@@ -1,17 +1,10 @@
-# -----------------------------------------------------------------------------
-# This Dockerfile.bun is specifically configured for projects using Bun
-# For npm/pnpm or yarn, refer to the Dockerfile instead
-# -----------------------------------------------------------------------------
-
-# Use Bun's official image
 FROM oven/bun:latest AS base
-
 WORKDIR /app
 
 # Install dependencies with bun
 FROM base AS deps
 COPY package.json bun.lock* ./
-RUN bun install --no-save --frozen-lockfile
+RUN bun install --frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -35,9 +28,11 @@ ENV NODE_ENV=production \
 COPY --from=builder /app/public ./public
 
 # Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=bun:bun /app/.next/standalone ./
+COPY --from=builder --chown=bun:bun /app/.next/static ./.next/static
+
+# Set the correct permission for prerender cache
+COPY --from=builder --chown=bun:bun /app/.next ./.next
 
 USER bun
 
