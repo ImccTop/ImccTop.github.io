@@ -19,11 +19,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
-# ENV NEXT_TELEMETRY_DISABLED=1
-
 # Copy and rename the docker-specific config file
 COPY next.config-docker.ts next.config.ts
 
@@ -33,19 +28,9 @@ RUN bun --bun run build
 FROM base AS runner
 WORKDIR /app
 
-# Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED=1
-
 ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME="0.0.0.0"
-
-# Install required packages for user management
-RUN apk add --no-cache shadow
-
-# Create user and group
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S -u 1001 -G nodejs nextjs
 
 COPY --from=builder /app/public ./public
 
@@ -54,7 +39,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-USER nextjs
+USER bun
 
 EXPOSE 3000
 
