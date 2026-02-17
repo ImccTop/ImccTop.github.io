@@ -92,13 +92,13 @@ export default function Home() {
           style={{ transform: isMobile ? "translate(0, 0)" : "translate3d(0,0,0)", willChange: 'transform' }}
         />
       </div>
-      <section className="fixed z-40 overflow-hidden">
+      <section className="fixed z-40 overflow-hidden w-full">
         <GradualBlur
           target="page"
           position="top"
-          height={isMobile ? "6rem" : "8rem"}
-          strength={isMobile ? 1 : 2}
-          divCount={isMobile ? 2 : 5}
+          height="6rem"
+          strength={2}
+          divCount={5}
           curve="bezier"
           exponential={true}
           opacity={1}
