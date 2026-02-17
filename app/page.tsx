@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import icon from "../public/icon1024.png";
 import beian from "../public/beian.png";
@@ -13,7 +13,10 @@ import ShinyText from "@/components/ShinyText";
 
 export default function Home() {
   const slogan = ["Innovative", "Minds", "Craft", "Connections"];
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const topGlowRef = useRef<HTMLDivElement | null>(null);
+  const bottomGlowRef = useRef<HTMLDivElement | null>(null);
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -25,12 +28,26 @@ export default function Home() {
     checkDevice();
     window.addEventListener("resize", checkDevice);
 
-    const handleMouseMove = (e: { clientX: number; clientY: number }) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth) * 2 - 1,
-        y: (e.clientY / window.innerHeight) * 2 - 1,
-      });
-    };
+    // 使用 rAF 批量更新 DOM transform，避免频繁 setState 导致重渲染
+    function handleMouseMove(e: MouseEvent) {
+      mouseRef.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseRef.current.y = (e.clientY / window.innerHeight) * 2 - 1;
+      if (rafRef.current == null) {
+        rafRef.current = requestAnimationFrame(() => {
+          const x = mouseRef.current.x * 50;
+          const y = mouseRef.current.y * 50;
+          if (topGlowRef.current)
+            topGlowRef.current.style.transform = isMobile
+              ? "translate(0, 0)"
+              : `translate3d(${x}px, ${y}px, 0)`;
+          if (bottomGlowRef.current)
+            bottomGlowRef.current.style.transform = isMobile
+              ? "translate(0, 0)"
+              : `translate3d(${-x}px, ${-y}px, 0)`;
+          rafRef.current = null;
+        });
+      }
+    }
     window.addEventListener("mousemove", handleMouseMove);
 
     // 设置加载完成状态
@@ -42,14 +59,14 @@ export default function Home() {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("resize", checkDevice);
       clearTimeout(timer);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, []);
 
   return (
     <div
-      className={`min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-x-hidden transition-opacity duration-1000 ${
-        isLoaded ? "opacity-100" : "opacity-0"
-      }`}
+      className={`min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-x-hidden transition-opacity duration-1000 ${isLoaded ? "opacity-100" : "opacity-0"
+        }`}
     >
       {/* 背景 */}
       <div
@@ -60,28 +77,19 @@ export default function Home() {
           amplitude={isMobile ? 1.0 : 1.5}
           distance={isMobile ? 0.2 : 0.3}
           enableMouseInteraction={false}
+          enabled={!isMobile}
         />
 
-        {/* 渐变光晕 */}
+        {/* 渐变光晕（使用 refs + rAF 更新 transform） */}
         <div
+          ref={topGlowRef}
           className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-cyan-500/10 rounded-full blur-3xl transition-transform duration-300 ease-out"
-          style={{
-            transform: isMobile
-              ? "translate(0, 0)"
-              : `translate(${mousePosition.x * 50}px, ${
-                  mousePosition.y * 50
-                }px)`,
-          }}
+          style={{ transform: isMobile ? "translate(0, 0)" : "translate3d(0,0,0)", willChange: 'transform' }}
         />
         <div
+          ref={bottomGlowRef}
           className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-purple-500/10 rounded-full blur-3xl transition-transform duration-300 ease-out"
-          style={{
-            transform: isMobile
-              ? "translate(0, 0)"
-              : `translate(${-mousePosition.x * 50}px, ${
-                  -mousePosition.y * 50
-                }px)`,
-          }}
+          style={{ transform: isMobile ? "translate(0, 0)" : "translate3d(0,0,0)", willChange: 'transform' }}
         />
       </div>
       <section className="fixed z-40 overflow-hidden">
@@ -89,8 +97,8 @@ export default function Home() {
           target="page"
           position="top"
           height={isMobile ? "6rem" : "8rem"}
-          strength={2}
-          divCount={5}
+          strength={isMobile ? 1 : 2}
+          divCount={isMobile ? 2 : 5}
           curve="bezier"
           exponential={true}
           opacity={1}

@@ -24,19 +24,19 @@ type GradualBlurProps = PropsWithChildren<{
   desktopWidth?: string;
 
   preset?:
-    | 'top'
-    | 'bottom'
-    | 'left'
-    | 'right'
-    | 'subtle'
-    | 'intense'
-    | 'smooth'
-    | 'sharp'
-    | 'header'
-    | 'footer'
-    | 'sidebar'
-    | 'page-header'
-    | 'page-footer';
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'subtle'
+  | 'intense'
+  | 'smooth'
+  | 'sharp'
+  | 'header'
+  | 'footer'
+  | 'sidebar'
+  | 'page-header'
+  | 'page-footer';
   gpuOptimized?: boolean;
   hoverIntensity?: number;
   target?: 'parent' | 'page';
@@ -167,6 +167,7 @@ const useIntersectionObserver = (ref: React.RefObject<HTMLDivElement>, shouldObs
 const GradualBlur: React.FC<GradualBlurProps> = props => {
   const containerRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   const [isHovered, setIsHovered] = useState(false);
+  const [isLowQuality, setIsLowQuality] = useState(false);
 
   const config = useMemo(() => {
     const presetConfig = props.preset && PRESETS[props.preset] ? PRESETS[props.preset] : {};
@@ -178,6 +179,19 @@ const GradualBlur: React.FC<GradualBlurProps> = props => {
 
   const isVisible = useIntersectionObserver(containerRef, config.animated === 'scroll');
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const nav: any = (navigator as any) || {};
+      const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
+      const slowConnection = connection && (connection.saveData || /2g|slow-2g/.test(connection.effectiveType || ''));
+      const smallScreen = window.innerWidth <= 480;
+      setIsLowQuality(!!slowConnection || smallScreen || !!(window as any).matchMedia && (window as any).matchMedia('(prefers-reduced-motion: reduce)').matches);
+    } catch (e) {
+      setIsLowQuality(false);
+    }
+  }, []);
+
   const blurDivs = useMemo(() => {
     const divs: React.ReactNode[] = [];
     const increment = 100 / config.divCount;
@@ -185,6 +199,17 @@ const GradualBlur: React.FC<GradualBlurProps> = props => {
       isHovered && config.hoverIntensity ? config.strength * config.hoverIntensity : config.strength;
 
     const curveFunc = CURVE_FUNCTIONS[config.curve] || CURVE_FUNCTIONS.linear;
+
+    if (isLowQuality) {
+      // 在低质量模式下，避免创建多个 backdrop-filter 层，使用单一渐变遮罩
+      const direction = getGradientDirection(config.position);
+      const fallbackStyle: CSSProperties = {
+        background: `linear-gradient(${direction}, rgba(0,0,0,${config.opacity}) 0%, rgba(0,0,0,0) 100%)`,
+        pointerEvents: 'none'
+      };
+      divs.push(<div key="lowq" className="absolute inset-0" style={fallbackStyle} />);
+      return divs;
+    }
 
     for (let i = 1; i <= config.divCount; i++) {
       let progress = i / config.divCount;

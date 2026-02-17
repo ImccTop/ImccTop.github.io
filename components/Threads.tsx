@@ -6,6 +6,7 @@ interface ThreadsProps {
   amplitude?: number;
   distance?: number;
   enableMouseInteraction?: boolean;
+  enabled?: boolean;
 }
 
 const vertexShader = `
@@ -130,6 +131,7 @@ const Threads: React.FC<ThreadsProps> = ({
   amplitude = 1,
   distance = 0,
   enableMouseInteraction = false,
+  enabled = true,
   ...rest
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -137,6 +139,7 @@ const Threads: React.FC<ThreadsProps> = ({
 
   useEffect(() => {
     if (!containerRef.current) return;
+    if (!enabled) return; // 如果在低性能/移动设备禁用，则不创建渲染器
     const container = containerRef.current;
 
     const renderer = new Renderer({ alpha: true });
@@ -195,6 +198,22 @@ const Threads: React.FC<ThreadsProps> = ({
       container.addEventListener("mouseleave", handleMouseLeave);
     }
 
+    let isVisible = true;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+        if (isVisible && animationFrameId.current === 0) {
+          animationFrameId.current = requestAnimationFrame(update);
+        }
+        if (!isVisible && animationFrameId.current) {
+          cancelAnimationFrame(animationFrameId.current);
+          animationFrameId.current = 0;
+        }
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(container);
+
     function update(t: number) {
       if (enableMouseInteraction) {
         const smoothing = 0.05;
@@ -209,19 +228,20 @@ const Threads: React.FC<ThreadsProps> = ({
       program.uniforms.iTime.value = t * 0.001;
 
       renderer.render({ scene: mesh });
-      animationFrameId.current = requestAnimationFrame(update);
+      if (isVisible) animationFrameId.current = requestAnimationFrame(update);
+      else animationFrameId.current = 0;
     }
     animationFrameId.current = requestAnimationFrame(update);
 
     return () => {
-      if (animationFrameId.current)
-        cancelAnimationFrame(animationFrameId.current);
+      if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
       window.removeEventListener("resize", resize);
 
       if (enableMouseInteraction) {
         container.removeEventListener("mousemove", handleMouseMove);
         container.removeEventListener("mouseleave", handleMouseLeave);
       }
+      observer.disconnect();
       if (container.contains(gl.canvas)) container.removeChild(gl.canvas);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
