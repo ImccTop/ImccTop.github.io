@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Imcc",
+  title: "我的前端页面分享",
   description: "Innovative Minds Craft Connections",
 };
 
